@@ -156,7 +156,7 @@ void handleClient(SOCKET clientSocket) {
 		insertDataToDatabase(buffer_f);
 
 		// 클라이언트에게 응답 전송 C# - String 타입으로 텍스트 데이터 표현 
-		string response = "Login successful!";
+		string response = buffer;
 		send(clientSocket, response.c_str(), response.size(), 0);
 
 	}
