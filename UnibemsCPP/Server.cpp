@@ -144,44 +144,34 @@ void handleClient(SOCKET clientSocket) {
 
             if (parseSensorData(dataPart, data, table))
             {
-                if (table == "Sensor")
-                {
-                    if (data.size() == 4)
-                    {
-                        db.insertSensor(static_cast<int>(data[0]), data[1], data[2], data[3]);
-                    }
+                if (table == "Sensor" && data.size() == 4)
+                { 
+                 db.insertSensor(static_cast<int>(data[0]), data[1], data[2], data[3]);   
                 }
-                
-                else if (table == "HAVC")
+                else if (table == "HAVC" && data.size() == 4)
                 {
-                    if (data.size() == 3)
-                    {
-                        db.insertHAVC(static_cast<int>(data[0]), data[1], data[2]);
-                    }
+                 db.insertHAVC(static_cast<int>(data[0]), data[1], data[2], data[3]);
+
                 }
 
-                else if (table == "Ventil")
+                else if (table == "VENTIL" && data.size() == 3)
                 {
-                    if (data.size() == 3)
-                    {
-                        db.insertVentil(static_cast<int>(data[0]), data[1], data[2]);
-                    }
+                 db.insertVentil(static_cast<int>(data[0]), data[1], data[2]);
                 }
 
-                else if (table == "EV")
+                else if (table == "EV" && data.size() == 2)
                 {
-                    if (data.size() == 2)
-                    {
-                        db.insertEV(static_cast<int>(data[0]), data[1]);
-                    }
+                 db.insertEV(static_cast<int>(data[0]), data[1]);
                 }
 
-                else if (table == "ES")
+                else if (table == "ES" && data.size() == 2)
                 {
-                    if (data.size() == 2)
-                    {
-                        db.insertES(static_cast<int>(data[0]), data[1]);
-                    }
+                 db.insertES(static_cast<int>(data[0]), data[1]);
+                }
+
+                else if (table == "VC" && data.size() == 3)
+                {
+                 db.insertVentil_control(static_cast<int>(data[0]), data[1], data[2]);
                 }
             }
         }
@@ -211,8 +201,38 @@ void handleClient(SOCKET clientSocket) {
         string ev1dataview = db.getev1dataview();
         string es1dataview = db.getes1dataview();
 
+        //// 빈값 0
+        //vector<string> data =
+        //{
+        //    avgSensorData, totalPower, havc1dataview, havc2dataview, havc3dataview, havc4dataview,
+        //    sensor1dataview, sensor2dataview, sensor3dataview,
+        //    ventil1dataview, ventil2dataview, ventil3dataview,
+        //    ev1dataview, es1dataview
+        //};
+        //for (int i = 0; i < data.size(); ++i) 
+        //{
+        //    if (data[i].empty()) 
+        //    {
+        //        data[i] = "0";
+        //    }
+        //}
+        //string response;
+
+        //for (int i = 0; i < data.size(); ++i)
+        //{
+        //    response += data[i];
+        //    if (i < data.size() - 1)
+        //    {
+        //        response += ";";
+        //    }
+        //}
+        
         // 클라이언트에게 응답 전송 C# - String 타입으로 텍스트 데이터 표현 
-        std::string response = "Login successful!";
+        //데이터를 결합하여 하나의 문자열로 만듭니다.
+        string response =
+            avgSensorData + ";" + totalPower + ";" + havc1dataview + ";" + havc2dataview + ";" + havc3dataview + ";" + havc4dataview + ";" + sensor1dataview + ";" + sensor2dataview + ";" + sensor3dataview + ";" +
+            ventil1dataview + ";" + ventil2dataview + ";" + ventil3dataview + ";" + ev1dataview + ";" + es1dataview;
+
         send(clientSocket, response.c_str(), static_cast<int>(response.size()), 0);
     }
 }

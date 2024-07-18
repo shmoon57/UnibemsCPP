@@ -41,7 +41,7 @@ void Database::disconnect()
 	}
 }
 
-void Database::insertHAVC(int h_id, float h_power, float h_temp)
+void Database::insertHAVC(int h_id, float h_power, float h_set_temp, int status)
 {
 	try
 	{
@@ -52,12 +52,13 @@ void Database::insertHAVC(int h_id, float h_power, float h_temp)
 		}
 
 		unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement(
-			"INSERT INTO havc (h_id, h_power, h_temp, TIMESTAMP) VALUES (?, ?, ?, CURRENT_TIMESTAMP) "));
+			"INSERT INTO havc (h_id, h_power, h_set_temp, status, TIMESTAMP) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) "));
 			
 
 		pstmt->setInt(1, h_id);
 		pstmt->setDouble(2, h_power);
-		pstmt->setDouble(3, h_temp);
+		pstmt->setDouble(3, h_set_temp);
+		pstmt->setInt(4, status);
 		pstmt->executeUpdate();
 
 	}
@@ -176,6 +177,33 @@ void Database::insertES(int es_id, float es_power)
 	}
 }
 
+void Database::insertVentil_control(int vc_id, int d_id, int dvalue)
+{
+	try
+	{
+		if (!con)
+		{
+			cerr << "DB ¿¬°áÀÌ ¾ÈµÊ" << endl;
+			return;
+		}
+
+		unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement(
+			"INSERT INTO ventil_control (vc_id, d_id, dvalue, TIMESTAMP) VALUES (?, ?, ?, CURRENT_TIMESTAMP) "));
+
+		pstmt->setInt(1, vc_id);
+		pstmt->setInt(2, d_id);
+		pstmt->setInt(3, dvalue);
+		pstmt->executeUpdate();
+
+	}
+
+	catch (sql::SQLException& e)
+	{
+		cerr << "MySQL error: " << e.what() << std::endl;
+
+	}
+}
+
 string Database::getAvgSensorData()
 {
 	try
@@ -187,15 +215,25 @@ string Database::getAvgSensorData()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM avg_sensor_data"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.avg_sensor_data"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string avg_temp = res->getString("avg_temp");
 			string avg_humidity = res->getString("avg_humidity");
 			string avg_co2 = res->getString("avg_co2");
 
-			return "Temp : " + avg_temp + ", Humidity : " + avg_humidity + ", Co2 : " + avg_co2;
+			return "Avg_Temp : " + avg_temp + ", Avg_Humidity : " + avg_humidity + ", Avg_Co2 : " + avg_co2;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -217,11 +255,23 @@ string Database::getTotalPower()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM tota_power"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.total_power"));
 
 		if (res->next())
 		{
-			return res->getString("total_power");
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
+			string total_power = res->getString("total_power");
+
+			return "total_power : " + total_power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -243,14 +293,24 @@ string Database::gethavc1dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM havc_1_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.havc_1_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string set_temp = res->getString("set_temp");
 			string power = res->getString("power");
 
-			return "Set_Temp : " + set_temp + ", Power : " + power;
+			return "h1_Set_Temp : " + set_temp + ", h1_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -272,14 +332,24 @@ string Database::gethavc2dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM havc_2_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.havc_2_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string set_temp = res->getString("set_temp");
 			string power = res->getString("power");
 
-			return "Set_Temp : " + set_temp + ", Power : " + power;
+			return "h2_Set_Temp : " + set_temp + ", h2_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -301,14 +371,24 @@ string Database::gethavc3dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM havc_3_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.havc_3_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string set_temp = res->getString("set_temp");
 			string power = res->getString("power");
 
-			return "Set_Temp : " + set_temp + ", Power : " + power;
+			return "h3_Set_Temp : " + set_temp + ", h3_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -330,14 +410,24 @@ string Database::gethavc4dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM havc_4_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.havc_4_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string set_temp = res->getString("set_temp");
 			string power = res->getString("power");
 
-			return "Set_Temp : " + set_temp + ", Power : " + power;
+			return "h4_Set_Temp : " + set_temp + ", h4_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -359,15 +449,25 @@ string Database::getsensor1dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM sensor_1_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.sensor_1_data_view"));
 
 		if (res->next())
 		{
-			string temp = res->getString("temp");
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
+			string temp = res->getString("temperature");
 			string humidity = res->getString("humidity");
 			string co2 = res->getString("co2");
 
-			return "Temp : " + temp + ", Humidity : " + humidity + ", Co2 : " + co2;
+			return "s1_Temp : " + temp + ", s1_Humidity : " + humidity + ", s1_Co2 : " + co2;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -389,15 +489,25 @@ string Database::getsensor2dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM sensor_2_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.sensor_2_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string temp = res->getString("temp");
 			string humidity = res->getString("humidity");
 			string co2 = res->getString("co2");
 
-			return "Temp : " + temp + ", Humidity : " + humidity + ", Co2 : " + co2;
+			return "s2_Temp : " + temp + ", s2_Humidity : " + humidity + ", s2_Co2 : " + co2;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -419,15 +529,25 @@ string Database::getsensor3dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM sensor_3_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.sensor_3_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string temp = res->getString("temp");
 			string humidity = res->getString("humidity");
 			string co2 = res->getString("co2");
 
-			return "Temp : " + temp + ", Humidity : " + humidity + ", Co2 : " + co2;
+			return "s3_Temp : " + temp + ", s3_Humidity : " + humidity + ", s3_Co2 : " + co2;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -449,14 +569,24 @@ string Database::getventil1dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM ventil_1_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.ventil_1_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string wind = res->getString("wind");
 			string power = res->getString("power");
 
-			return "Wind : " + wind + ", Power : " + power;
+			return "v1_Wind : " + wind + ", v1_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -478,14 +608,24 @@ string Database::getventil2dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM ventil_2_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.ventil_2_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string wind = res->getString("wind");
 			string power = res->getString("power");
 
-			return "Wind : " + wind + ", Power : " + power;
+			return "v2_Wind : " + wind + ", v2_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -507,14 +647,24 @@ string Database::getventil3dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM ventil_3_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.ventil_3_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string wind = res->getString("wind");
 			string power = res->getString("power");
 
-			return "Wind : " + wind + ", Power : " + power;
+			return "v3_Wind : " + wind + ", v3_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -536,13 +686,23 @@ string Database::getev1dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM ev_1_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.ev_1_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string power = res->getString("power");
 
-			return "Power : " + power;
+			return "ev1_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)
@@ -564,13 +724,23 @@ string Database::getes1dataview()
 		}
 
 		unique_ptr<sql::Statement> stmt(con->createStatement());
-		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM es_1_data_view"));
+		unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM unibemsdb.es_1_data_view"));
 
 		if (res->next())
 		{
+			sql::ResultSetMetaData* metaData = res->getMetaData();
+			int numColumns = metaData->getColumnCount();
+			for (int i = 1; i <= numColumns; ++i)
+			{
+				cout << "Column : " << i << " name : " << metaData->getColumnLabel(i) << endl;
+			}
 			string power = res->getString("power");
 
-			return "Power : " + power;
+			return "es1_Power : " + power;
+		}
+		else
+		{
+			cerr << "No data returned" << endl;
 		}
 	}
 	catch (sql::SQLException& e)

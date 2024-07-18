@@ -24,7 +24,8 @@ bool parseSensorData(const std::string& part, vector<float>& data, string& table
     regex havc_regex(R"((HAVC))");
     regex ev_regex(R"((EV))");
     regex es_regex(R"((ES))");
-    regex ventil_regex(R"((Ventil))");
+    regex ventil_regex(R"((VENTIL))");
+    regex ventil_control_regex(R"((VC))");
 
     string cleaned_part;
 
@@ -46,7 +47,11 @@ bool parseSensorData(const std::string& part, vector<float>& data, string& table
     }
     else if (regex_search(part, ventil_regex)) {
         cleaned_part = std::regex_replace(part, ventil_regex, "");
-        table = "Ventil";
+        table = "VENTIL";
+    }
+    else if (regex_search(part, ventil_control_regex)) {
+        cleaned_part = std::regex_replace(part, ventil_control_regex, "");
+        table = "VC";
     }
     else {
         return false;

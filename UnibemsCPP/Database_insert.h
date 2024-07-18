@@ -25,11 +25,12 @@ public :
 
 	bool connect(const database_info& condb);
 	void disconnect();
-	void insertHAVC(int h_id, float h_power, float h_temp);
+	void insertHAVC(int h_id, float h_power, float h_set_temp, int status);
 	void insertSensor(int s_id, float s_temp, float s_humidity, float s_co2);
 	void insertVentil(int v_id, float v_wind, float v_power);
 	void insertEV(int ev_id, float ev_power);
 	void insertES(int es_id, float es_power);
+	void insertVentil_control(int vc_id, int d_id, int dvalue);
 	
 	// 대시보드 출력 뷰
 	string getAvgSensorData();
